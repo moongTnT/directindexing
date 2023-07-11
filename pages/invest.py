@@ -17,6 +17,8 @@ st.markdown(
 
 cdn = st.secrets["cdn_credentials"]["host"]
 
+pdf = fetch_pdf(st.session_state.my_theme_ticker)
+
 st.title(st.session_state.my_theme)
 
 with st.form("my_form"):

@@ -1,6 +1,7 @@
 import bt
 import streamlit as st
 import pandas as pd
+from utils.fetch_data import *
 
 def get_market_cap_weigh(pdf, prices, ceiling, idx):
     

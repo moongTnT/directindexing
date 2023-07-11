@@ -3,6 +3,22 @@ import bt
 import streamlit as st
 import pymysql
 
+@st.cache_data
+def fetch_shares():
+    conn = pymysql.connect(**st.secrets["db_credentials"],
+                       cursorclass=pymysql.cursors.DictCursor)
+    cur = conn.cursor()
+    
+    sql = """
+    select * from shares
+    """
+
+    cur.execute(sql)
+    
+    ret = pd.DataFrame(cur.fetchall())
+    
+    return ret
+
 @st.cache_data()
 def fetch_data_from_web(tickers, start):
     data = bt.get(tickers=tickers, start=start)

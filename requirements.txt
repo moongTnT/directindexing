@@ -1,5 +1,5 @@
 future
-card-component=0.0.2
+card-component==0.0.2
 pandas
 streamlit
 streamlit-extras

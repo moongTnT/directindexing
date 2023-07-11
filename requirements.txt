@@ -4,7 +4,6 @@ pandas
 streamlit
 streamlit-extras
 streamlit-elements
-card-componet
 pymysql
 plotly
 bt

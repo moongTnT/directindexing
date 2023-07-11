@@ -4,7 +4,7 @@ import pandas as pd
 
 def get_market_cap_weigh(pdf, prices, ceiling, idx):
     
-    pdf_shares = pd.read_csv('./db/shares.csv', index_col=0)
+    pdf_shares = fetch_shares().set_index(keys="tickers", drop=True)
     
     pdf_shares = pdf_shares.loc[pdf.index]
     
@@ -14,7 +14,7 @@ def get_market_cap_weigh(pdf, prices, ceiling, idx):
     
     pdf_shares.index = idx
     
-    pdf_shares["유동시가총액"] = pdf_shares["발행주식수"]*pdf_shares["close"]*pdf_shares["유동비율"]
+    pdf_shares["유동시가총액"] = pdf_shares["shares"]*pdf_shares["close"]*pdf_shares["rate"]
     
     pdf_shares.sort_values(by="유동시가총액", inplace=True, ascending=False)
     

@@ -2,9 +2,13 @@ import streamlit as st
 import bt
 from card_component import card_component
 from streamlit_extras.switch_page_button import switch_page
+import datetime
+from dateutil.relativedelta import relativedelta
 
 from utils.utils import init_user_state
 from utils.fetch_data import *
+
+from streamlit_elements import elements, html, mui, sync
 
 st.set_page_config(
     initial_sidebar_state='collapsed')
@@ -15,9 +19,7 @@ st.markdown(
     [data-testid="collapsedControl"] {
         display: none
     }
-    tabs-bui3113-tabpanel-0 > div:nth-child(1) {
-        overflow-x: scroll;
-    }
+    
 </style>
 """,
     unsafe_allow_html=True,
@@ -27,16 +29,11 @@ cdn = st.secrets["cdn_credentials"]["host"]
 
 theme_etfs = fetch_etfs()
 
-init_user_state()
-
 st.markdown("""
             ###  **테마형 지수로 시작해보세요**
             """)
 
 tab_list = ["국내 주식", "해외 주식"]
-
-import datetime
-from dateutil.relativedelta import relativedelta
 
 start = datetime.datetime.today() - relativedelta(months=3)
 
@@ -44,26 +41,87 @@ ticker = theme_etfs.index.to_list()[0]
 
 tab1, tab2 = st.tabs(tab_list)
 
-with tab1:
+cards_css = {
+    "display": "flex",
+    "overflow-x": "scroll",
+    "scroll-snap-type": "x mandatory",
 
-    col_list = st.columns(4)
-    i=0
-
+    "&::-webkit-scrollbar-thumb": {
+        "border-radius": "92px",
+        "background": "#F58220"
+    },
+    "&::-webkit-scrollbar-track": {
+        "border-radius": "92px",
+        "background": "#ECEFF4"
+    },
+    "&::-webkit-scrollbar": {
+        "height": "12px"
+    },
     
-    for ticker, row in theme_etfs.iterrows():
-        # etf_price = bt.get([str(ticker)], start=start)
-        with col_list[i%4]:
-            if card_component(
-                    title=row["theme"],
-                    img_path=f"{cdn}/{str(ticker)}.svg",
-                    pdf_cnts=ticker,
-                    body=row["return_3m"]
-                ):
-                st.session_state['my_theme']=row['theme']
-                st.session_state['my_theme_ticker']=ticker
-                st.session_state["my_base_index_name"]=row['etf_name']
-                switch_page("invest")      
-        i+=1
+}
 
+card_css = {
+    "display": "flex",
+    "flex-direction": "column",
+    "flex": "0 0 100%",
+    "scroll-snap-align": "start",
+    "margin-right": "15px",
+    "border-color": "#ECEFF4",
+    "max-width": "110px",
+    "border-radius": "20px",
+    "margin": "20px 15px 30px 0",
+    "cursor": "pointer"
+}
+
+with tab1:
+    with elements("my_card"):
+
+        init_user_state()
+
+        def allocate_state(key, val):
+            st.session_state[key]=val
+
+        def handle_click(theme, theme_ticker, name):
+            def f(e):
+                allocate_state("is_clicked", True)
+                allocate_state("my_theme_ticker", theme_ticker)
+                allocate_state("my_theme", theme)    
+                allocate_state("my_base_index_name", name)
+            return f
+
+        card_list = []
+
+        for ticker, row in theme_etfs.iterrows():
+            ret_str = "+"+str(row["return_3m"]) if row["return_3m"] >= 0 else "-"+str(row["return_3m"])
+            if row["return_3m"] >= 0:
+                ret_comp = mui.Typography(f'{ret_str}%', variant="caption", componet='span', color="red", sx={"font-weight": "bold"})
+            else:
+                ret_comp = mui.Typography(f'{ret_str}%', variant="caption", componet='span', color="blue", sx={"font-weight": "bold"})
+            tmp_card = mui.Card(
+                    mui.CardContent(
+                            mui.Avatar(
+                                src=f"{cdn}/{ticker}.svg",
+                                alt=ticker,
+                                sx={"width": "30px",
+                                    "height": "30px"}
+                                ),
+                            mui.Typography(row["theme"], sx={"font-weight": "bold", "font-size": "12px"}),
+                            mui.Typography("1년 ", variant="caption", component="span"),
+                            ret_comp,
+                    ),
+                onClick=handle_click(theme=row["theme"],
+                                     theme_ticker=ticker,
+                                     name=row["etf_name"]),
+                sx=card_css,
+            )
+            card_list.append(tmp_card)
+
+        mui.Container(
+            *card_list,
+            sx=cards_css)
 with tab2:
     st.text("🤗 준비 중이에요~ 조금만 기다려 주세요! 🤗")
+
+if st.session_state.is_clicked:
+    switch_page("invest")
+    

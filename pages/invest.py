@@ -14,6 +14,7 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+st.session_state["is_clicked"] = None
 
 cdn = st.secrets["cdn_credentials"]["host"]
 

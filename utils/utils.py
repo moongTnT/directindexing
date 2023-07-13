@@ -1,17 +1,21 @@
 import bt
 import pandas as pd
 import streamlit as st
-from utils.fetch_data import fetch_data_from_db, fetch_data_from_web
-
+from utils.fetch_data import fetch_data_from_web
+from strategy import *
 
 def init_user_state():
+    
+    if 'is_clicked' not in st.session_state:
+        st.session_state['is_clicked'] = None
+    
     if 'my_theme' not in st.session_state:
         st.session_state['my_theme'] = None
 
     if 'my_base_index_name' not in st.session_state:
         st.session_state['my_base_index_name'] = None
         
-    if 'my_theme_' not in st.session_state:
+    if 'my_theme_ticker' not in st.session_state:
         st.session_state['my_theme_ticker'] = None
         
     if "name" not in st.session_state:
@@ -29,19 +33,10 @@ def init_user_state():
     if "volumne" not in st.session_state:
         st.session_state["volumne"]=None
 
-def get_ticker_list(pdf):
-    ticker_list = []
-    for i, row in pdf.iterrows():
-        if row["시장구분"]=="KOSPI":
-            ticker_list.append(i+".ks")
-        else:
-            ticker_list.append(i+".kq")
-    return ticker_list
 
-from strategy import *
 
 def choose_strategy(pdf, tickers, start):    
-    data = fetch_data_from_db(tickers=tickers, start=start)
+    data = fetch_prices(tickers=tickers, start=start)
     
     data["my_date"] = data.index
     

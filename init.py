@@ -13,8 +13,6 @@ from streamlit_elements import elements, html, mui
 st.set_page_config(
     initial_sidebar_state='collapsed')
 
-st.write(st.session_state)
-
 st.markdown(
     """
 <style>

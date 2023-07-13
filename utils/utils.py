@@ -63,11 +63,11 @@ def choose_strategy(pdf, tickers, start):
 
 def init(bas_ticker, start, pdf, tickers):
     # 대표지수(코스피200)
-    rep_data = fetch_data_from_web(tickers=["^KS200"], start=start)
+    rep_data = fetch_prices(tickers=["KPI200"], start=start)
     port_rep = WeighEaully(rep_data, name="코스피200")
 
     # 기준지수
-    bas_data = fetch_data_from_web(tickers=[str(bas_ticker)+'.ks'], start=start)
+    bas_data = fetch_prices(tickers=[bas_ticker], start=start)
     port_base = WeighEaully(bas_data, name=st.session_state.my_base_index_name)    
     
     # 나의 지수

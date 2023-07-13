@@ -8,10 +8,12 @@ from dateutil.relativedelta import relativedelta
 from utils.utils import init_user_state
 from utils.fetch_data import *
 
-from streamlit_elements import elements, html, mui, sync
+from streamlit_elements import elements, html, mui
 
 st.set_page_config(
     initial_sidebar_state='collapsed')
+
+st.write(st.session_state)
 
 st.markdown(
     """
@@ -27,17 +29,11 @@ st.markdown(
 
 cdn = st.secrets["cdn_credentials"]["host"]
 
-theme_etfs = fetch_etfs()
-
 st.markdown("""
             ###  **테마형 지수로 시작해보세요**
             """)
 
 tab_list = ["국내 주식", "해외 주식"]
-
-start = datetime.datetime.today() - relativedelta(months=3)
-
-ticker = theme_etfs.index.to_list()[0]
 
 tab1, tab2 = st.tabs(tab_list)
 
@@ -73,9 +69,14 @@ card_css = {
     "cursor": "pointer"
 }
 
+start = datetime.datetime.today() - relativedelta(months=3)
+
+theme_etfs = fetch_etfs()
+
+ticker = theme_etfs.index.to_list()[0]
+
 with tab1:
     with elements("my_card"):
-
         init_user_state()
 
         def allocate_state(key, val):
@@ -92,7 +93,7 @@ with tab1:
         card_list = []
 
         for ticker, row in theme_etfs.iterrows():
-            ret_str = "+"+str(row["return_3m"]) if row["return_3m"] >= 0 else "-"+str(row["return_3m"])
+            ret_str = "+"+str(row["return_3m"]) if row["return_3m"] >= 0 else str(row["return_3m"])
             if row["return_3m"] >= 0:
                 ret_comp = mui.Typography(f'{ret_str}%', variant="caption", componet='span', color="red", sx={"font-weight": "bold"})
             else:

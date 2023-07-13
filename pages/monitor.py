@@ -18,21 +18,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 pdf = fetch_sector_pdf(st.session_state.my_theme_ticker)
 ticker_pdf = fetch_pdf(st.session_state.my_theme_ticker)
 ticker_list = pdf.index.to_list()
-        
+    
 start = dt.datetime.today() - relativedelta(months=12)
-
 ports = init(st.session_state.my_theme_ticker,
              start,
              pdf,
              ticker_list)
-
 ret = bt.run(*ports)
-
 prices = ret._get_series(freq=None)
-
 my_ret = round(prices.rebase().iloc[-1, -1], 2)
 
 with elements("Title"):

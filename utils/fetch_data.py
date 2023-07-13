@@ -63,12 +63,17 @@ def fetch_shares():
 @st.cache_data()
 def read_stock_prices_from_db(ticker_list, start):
     
-    tickers = ","
-    tickers = tickers.join(ticker_list)
-    
-    sql = f"""
-    select tickers, date, close from kr_price where tickers in ({tickers}) and date>=date("{start}")
-    """
+    if len(ticker_list) == 1:
+        sql = f"""
+            select tickers, date, close from kr_price where tickers = "{ticker_list[0]}" and date>=date("{start}")
+        """
+    else:
+        tickers = ","
+        tickers = tickers.join(ticker_list)
+        
+        sql = f"""
+        select tickers, date, close from kr_price where tickers in ({tickers}) and date>=date("{start}")
+        """
     
     ret = fetch_data_from_db(query=sql)
     
@@ -95,11 +100,10 @@ def fetch_prices(tickers, start):
     
     return data/100
 
-
 @st.cache_data()
 def fetch_etfs():
     sql="""
-    SELECT * from etf;
+    SELECT * from etf order by return_3m desc;
     """
     
     ret = fetch_data_from_db(query=sql)

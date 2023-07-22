@@ -80,7 +80,7 @@ def WeighEaully(data,
                            algos=[
                                bt.algos.SelectAll(),
                                bt.algos.WeighEqually(),
-                               bt.algos.RunQuarterly(),
+                               p,
                                bt.algos.Rebalance()
                                ]
                             )

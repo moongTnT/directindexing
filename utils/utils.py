@@ -105,7 +105,9 @@ def monitor_choose_strategy(
                         weigh_data=weigh_data)
     
     elif comp_method == "동일가중":
-        return WeighEaully(prices, "동일가중")
+        return WeighEaully(prices,
+                           name=name,
+                           rebalance=rebalance)
     
 
 

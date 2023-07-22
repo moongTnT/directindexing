@@ -3,11 +3,11 @@ import streamlit as st
 import pandas as pd
 from utils.fetch_data import *
 
-def get_market_cap_weigh(pdf, prices, ceiling, idx):
+def get_market_cap_weigh(prices, ceiling, idx):
     
     pdf_shares = fetch_shares().set_index(keys="tickers", drop=True)
     
-    pdf_shares = pdf_shares.loc[pdf.index]
+    pdf_shares = pdf_shares.loc[prices.index]
     
     prices.name="close"
     
@@ -25,7 +25,7 @@ def get_market_cap_weigh(pdf, prices, ceiling, idx):
     
     for i, row in pdf_shares.iterrows():
         ratio = row["유동시가총액"]/total_sum
-        if ratio > 0.1:
+        if ratio > ceiling:
             pdf_shares.loc[i, "비중"] = ceiling
             total_sum = (total_sum - row["유동시가총액"])*(1/(1-ceiling))
         else:
@@ -33,16 +33,18 @@ def get_market_cap_weigh(pdf, prices, ceiling, idx):
 
     return pdf_shares["비중"]
 
-def WeighCap(pdf, data, name, weigh_data):
+def WeighCap(data,
+             name,
+             weigh_data):
     
     weigh_list = []
 
     for i, prices in weigh_data.iterrows():
         price = prices.copy()
-        
-        price.index = pdf.index
 
-        tmp = get_market_cap_weigh(pdf, price, 0.1, weigh_data.columns)
+        tmp = get_market_cap_weigh(price,
+                                   0.1,
+                                   weigh_data.columns)
 
         tmp.name = prices.name
 
@@ -61,15 +63,17 @@ def WeighCap(pdf, data, name, weigh_data):
     
     return bt.Backtest(strategy, data)
 
-def WeighEaully(data, name):
+def WeighEaully(data,
+                name,
+                rebalance):
     
-    if st.session_state["rebalance"] == "1개월":
+    if rebalance == "1개월":
         p = bt.algos.RunMonthly()
         
-    elif st.session_state["rebalance"] == "3개월":
+    elif rebalance == "3개월":
         p = bt.algos.RunQuarterly()
         
-    elif st.session_state["rebalance"] == "1년":
+    elif rebalance == "1년":
         p = bt.algos.RunYearly()
     
     strategy = bt.Strategy(name=name,

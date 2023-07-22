@@ -1,101 +1,76 @@
 import streamlit as st
-import bt
-from card_component import card_component
 from streamlit_extras.switch_page_button import switch_page
 import datetime
 from dateutil.relativedelta import relativedelta
 
-from utils.utils import init_user_state
+from utils.utils import *
 from utils.fetch_data import *
 
-from streamlit_elements import elements, html, mui
+from streamlit_elements import elements, mui
+
+from style import init_css, card_css, cards_css
 
 st.set_page_config(
     initial_sidebar_state='collapsed')
 
-st.markdown(
-    """
-<style>
-    [data-testid="collapsedControl"] {
-        display: none
-    }
-    
-</style>
-""",
+st.markdown(init_css,
     unsafe_allow_html=True,
 )
 
 cdn = st.secrets["cdn_credentials"]["host"]
 
 st.markdown("""
-            ###  **테마형 지수로 시작해보세요**
+            ###  **테마형 ETF로 시작해보세요**
+            🤗 나만의 ETF로 만들 테마를 골라주세요.
             """)
 
-tab_list = ["국내 주식", "해외 주식"]
+tab_list = ["🇰🇷 국내 테마", "🌎 글로벌 테마"]
 
 tab1, tab2 = st.tabs(tab_list)
 
-cards_css = {
-    "display": "flex",
-    "overflow-x": "scroll",
-    "scroll-snap-type": "x mandatory",
-
-    "&::-webkit-scrollbar-thumb": {
-        "border-radius": "92px",
-        "background": "#F58220"
-    },
-    "&::-webkit-scrollbar-track": {
-        "border-radius": "92px",
-        "background": "#ECEFF4"
-    },
-    "&::-webkit-scrollbar": {
-        "height": "12px"
-    },
-    
-}
-
-card_css = {
-    "display": "flex",
-    "flex-direction": "column",
-    "flex": "0 0 100%",
-    "scroll-snap-align": "start",
-    "margin-right": "15px",
-    "border-color": "#ECEFF4",
-    "max-width": "110px",
-    "border-radius": "20px",
-    "margin": "20px 15px 30px 0",
-    "cursor": "pointer"
-}
-
 start = datetime.datetime.today() - relativedelta(months=3)
 
-theme_etfs = fetch_etfs()
-
-ticker = theme_etfs.index.to_list()[0]
-
 with tab1:
+    choose_init_state()
+    
     with elements("my_card"):
-        init_user_state()
+        
 
         def allocate_state(key, val):
             st.session_state[key]=val
 
-        def handle_click(theme, theme_ticker, name):
+        def handle_click(theme_info: dict):
             def f(e):
-                allocate_state("is_clicked", True)
-                allocate_state("my_theme_ticker", theme_ticker)
-                allocate_state("my_theme", theme)    
-                allocate_state("my_base_index_name", name)
+                st.session_state["is_choose"] = True
+            
+                st.session_state["my_theme_info"]=theme_info
+                
+                pdf = fetch_pdf(st.session_state["my_theme_info"]["tickers"])
+                
+                st.session_state["invest_theme_pdf"]=[]
+                
+                for ticker, row in pdf.iterrows():
+                    st.session_state["invest_theme_pdf"].append(
+                        dict(
+                            tickers=ticker,
+                            cmp_name=row["cmp_name"],
+                            market=row["mkt"],
+                        )
+                    )
             return f
 
         card_list = []
 
-        for ticker, row in theme_etfs.iterrows():
-            ret_str = "+"+str(row["return_3m"]) if row["return_3m"] >= 0 else str(row["return_3m"])
-            if row["return_3m"] >= 0:
+        for theme in st.session_state["choose_theme_info"]:
+            ticker=theme["tickers"]
+            
+            if theme["returns"]>=0:
+                ret_str = "+"+str(theme["returns"])
                 ret_comp = mui.Typography(f'{ret_str}%', variant="caption", componet='span', color="red", sx={"font-weight": "bold"})
             else:
+                ret_str = str(theme["returns"])
                 ret_comp = mui.Typography(f'{ret_str}%', variant="caption", componet='span', color="blue", sx={"font-weight": "bold"})
+            
             tmp_card = mui.Card(
                     mui.CardContent(
                             mui.Avatar(
@@ -104,13 +79,11 @@ with tab1:
                                 sx={"width": "30px",
                                     "height": "30px"}
                                 ),
-                            mui.Typography(row["theme"], sx={"font-weight": "bold", "font-size": "12px"}),
+                            mui.Typography(theme["theme_name"], sx={"font-weight": "bold", "font-size": "12px"}),
                             mui.Typography("1년 ", variant="caption", component="span"),
                             ret_comp,
                     ),
-                onClick=handle_click(theme=row["theme"],
-                                     theme_ticker=ticker,
-                                     name=row["etf_name"]),
+                onClick=handle_click(theme_info=theme),
                 sx=card_css,
             )
             card_list.append(tmp_card)
@@ -121,6 +94,6 @@ with tab1:
 with tab2:
     st.text("🤗 준비 중이에요~ 조금만 기다려 주세요! 🤗")
 
-if st.session_state.is_clicked:
+if st.session_state["is_choose"]:
+    st.session_state["is_choose"]=False
     switch_page("invest")
-    

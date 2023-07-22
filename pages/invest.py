@@ -3,37 +3,72 @@ from utils.utils import *
 from utils.fetch_data import *
 from streamlit_elements import elements, mui
 from streamlit_extras.switch_page_button import switch_page
+from style import *
 
 st.markdown(
-    """
-<style>
-    [data-testid="collapsedControl"] {
-        display: none
-    }
-</style>
-""",
-    unsafe_allow_html=True,
+   invest_init_css,
+   unsafe_allow_html=True,
 )
 
 cdn = st.secrets["cdn_credentials"]["host"]
 
-st.markdown(
-    f"""
-    ## {st.session_state["my_theme_info"]["theme_name"]}
-    🤔 {st.session_state["my_theme_info"]["base_index_name"]} ETF에 포함되어 있는 기업들을 모아봤어요.
+with elements("invest_title"):
+    mui.Typography(f'{st.session_state["my_theme_info"]["base_index_name"]}',
+                   component="span",
+                   sx={
+                       "fontSize": 20,
+                       "fontWeight": 900,
+                       "fontFamily": "sans-serif",
+                   })
+    mui.Chip(label=st.session_state["my_theme_info"]["tickers"],
+             component="span",
+             size="x-small",
+             sx={
+                 "margin": 1,
+                "fontSize": 10,
+                "fontWeight": 900,
+                "fontFamily": 'sans-serif',
+                "letterSpacing": 1,
+                "maxHeight": "20px"
+             })
     
-    ✔ 구성종목 편집에서 제외할 종목을 선택해주세요.
+    returns = st.session_state["my_theme_info"]["returns"]
     
-    ✔ 투자방식 편집에서 각 종목들의 비중과 리밸런싱 주기를 선택해주세요.
-    """
-)
+    if returns>=0:
+        mui.Typography(
+            "+"+str(returns)+"%",
+            color="red",
+            sx={
+                "fontSize": 30,
+                "fontWeight": 900,
+                "fontFamily": 'sans-serif',
+                "letterSpacing": 1
+            }
+        )
     
-tab_list = ["구성종목 편집", "투자방식 편집"]
+tab_list = ["구성종목", "투자전략"]
 
 tab1, tab2 = st.tabs(tab_list)
 
 with tab1:
     with elements("dataframe"):
+        
+        mui.Typography(f"""
+                        {st.session_state["my_theme_info"]["base_index_name"]} ETF에 포함되어 있는 기업들을 모아봤어요. 😤
+                       """,
+                       sx={
+                           "fontWeight": 600,
+                           "fontSize": 15
+                       })
+        
+        mui.Typography("""
+                       제외할 종목들을 선택해주세요.
+                       """,
+                       sx={
+                           "fontWeight": 600,
+                           "fontSize": 15,
+                           "mb": 1
+                       })
         
         def handle_click(index):
             def f(e):
@@ -56,7 +91,7 @@ with tab1:
                                    sx={"font-weight": "bold"}),
                     align="right",
                     sx={
-                        "padding": "10px 10px 10px 0",
+                        "padding": "10px 10px 5px 0",
                         "width": "0%",
                         }
                     ),
@@ -68,7 +103,7 @@ with tab1:
                         src=f"{cdn}/{str(ticker)}.png"
                     ),
                     sx={
-                        "padding": "10px 2px 10px 0px",
+                        "padding": "10px 2px 5px 0px",
                         "width": "0%"
                         }
                 ),
@@ -84,7 +119,7 @@ with tab1:
                                 "font-size": "x-small",
                                 "font-weight": "bold"}),
                     align="left",
-                    sx={"padding": "10px 2px 10px 10px"}
+                    sx={"padding": "10px 2px 5px 10px"}
                 ),
                 
                 # 삭제 버튼
@@ -94,6 +129,7 @@ with tab1:
                         onClick=handle_click(index)
                     ),
                     align="right",
+                    sx={"padding": "10px 2px 5px 10px"}
                 )
             ]
             
@@ -102,10 +138,11 @@ with tab1:
         mui.TableContainer(
             mui.Table(
                 mui.TableBody(
-                    *table_bodys
+                    *table_bodys,
                 ),
-                sx={"th, td": {"borderBottom": "none",}}
-            )
+                sx={"th, td": {"borderBottom": "none",},}
+            ),
+            sx={"maxHeight": 500}
         )
         
 # 운용 방식을 선택한다.

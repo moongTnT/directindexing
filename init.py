@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from utils.utils import *
 from utils.fetch_data import *
 
-from streamlit_elements import elements, mui
+from streamlit_elements import elements, mui, html
 
 from style import init_css, card_css, cards_css
 
@@ -19,12 +19,10 @@ st.markdown(init_css,
 
 cdn = st.secrets["cdn_credentials"]["host"]
 
-st.markdown("""
-            ###  **테마형 ETF로 시작해보세요**
-            🤗 나만의 ETF로 만들 테마를 골라주세요.
-            """)
-
-tab_list = ["🇰🇷 국내 테마", "🌎 글로벌 테마"]
+with elements("title"):
+    html.img(src="https://www.miraeasset.co.kr/img/pr/ci_img_01.jpg",width=200)
+    
+tab_list = ["🇰🇷 국내", "🌎 글로벌"]
 
 tab1, tab2 = st.tabs(tab_list)
 
@@ -34,7 +32,12 @@ with tab1:
     choose_init_state()
     
     with elements("my_card"):
-        
+        mui.Typography("🤗 나만의 ETF로 만들 테마를 골라주세요.",
+                       sx={
+                           "fontSize": 15,
+                           "fontWeight": "Bold",
+                           "fontFamily": "Spoqa Han Sans Neo"
+                       })
 
         def allocate_state(key, val):
             st.session_state[key]=val

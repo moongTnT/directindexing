@@ -96,6 +96,9 @@ with tab1:
             sx=cards_css)
 with tab2:
     st.text("🤗 준비 중이에요~ 조금만 기다려 주세요! 🤗")
+    
+st.markdown("*본 서비스는 2023미래에셋증권 빅데이터 페스티벌 과제 제출용이며 어떠한 상업적 의도 및 행위가 없음을 밝힙니다.")
+st.markdown("*사용 데이터는 23년 2분기 데이터로 실시간 데이터가 아님을 밝힙니다.")
 
 if st.session_state["is_choose"]:
     st.session_state["is_choose"]=False
